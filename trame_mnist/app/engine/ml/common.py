@@ -20,6 +20,8 @@ TRANSFORM = transforms.Compose(
     [transforms.ToTensor(), transforms.Normalize((0,), (1,))]
 )
 
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 # -----------------------------------------------------------------------------
 
 
@@ -81,11 +83,12 @@ class Model:
         acc = torch.sum(output == target) / output.shape[0]
         return float(acc)
 
-    def train_step(self, dataset):
+    def train_step(self, dataset, device=DEVICE):
         self.model.train()
         batch_loss = []
         batch_acc = []
         for inputs, targets in dataset:
+            inputs, targets = inputs.to(device), targets.to(device)
             outputs = self.model(inputs)
 
             loss = self.loss(outputs, targets)
@@ -97,11 +100,12 @@ class Model:
         self.train_loss.append(float(np.mean(batch_loss)))
         self.train_acc.append(float(np.mean(batch_acc)))
 
-    def validation_step(self, dataset):
+    def validation_step(self, dataset, device=DEVICE):
         self.model.eval()
         batch_loss = []
         batch_acc = []
         for inputs, targets in dataset:
+            inputs, targets = inputs.to(device), targets.to(device)
             outputs = self.model(inputs)
 
             loss = self.loss(outputs, targets)
@@ -111,11 +115,12 @@ class Model:
         self.val_loss.append(float(np.mean(batch_loss)))
         self.val_acc.append(float(np.mean(batch_acc)))
 
-    def load(self, model_path=MODEL_PATH):
+    def load(self, model_path=MODEL_PATH, device=DEVICE):
         if Path(model_path).exists():
-            data = torch.load(model_path)
+            data = torch.load(model_path, map_location=device)
             self.metadata = data.get("metadata")
             self.model.load_state_dict(data.get("state_dict"))
+            self.model.to(device)
             self.model.eval()
 
     def save(self, output_path=MODEL_PATH):
@@ -125,9 +130,9 @@ class Model:
         }
         torch.save(data, output_path)
 
-    def predict(self, image):
+    def predict(self, image, device=DEVICE):
         self.model.eval()
-        tensor = TRANSFORM(image)
+        tensor = TRANSFORM(image).to(device)
         tensor = torch.reshape(tensor, (1, *tensor.shape))
         return self.model(tensor)
 
