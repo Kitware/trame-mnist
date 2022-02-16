@@ -20,8 +20,6 @@ LOADER_TEST = torch.utils.data.DataLoader(
     shuffle=True,
 )
 
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 
 def winner_class(classes):
     v = np.amax(classes)
@@ -30,8 +28,8 @@ def winner_class(classes):
 
 
 @torch.no_grad()
-def testing_run(datasets=LOADER_TEST, device=DEVICE):
-    model = get_model().model
+def testing_run(datasets=LOADER_TEST):
+    device, model = get_model().device, get_model().model
     model.eval()
     confusion_matrix = np.zeros((10, 10), dtype=np.float64)
     for inputs, targets in datasets:
