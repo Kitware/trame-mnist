@@ -52,6 +52,7 @@ Running the application
     conda activate trame-mnist
     trame-mnist
 
+If **cuda** is available, the application will use your GPU, but you can also force the usage of your cpu by adding the **--cpu** command line argument.
 
 |image_1| |image_2| |image_3|
 

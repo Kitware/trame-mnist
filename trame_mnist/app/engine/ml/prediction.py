@@ -41,4 +41,4 @@ def prediction_update():
 
 
 def prediction_xai_params():
-    return MODEL.model, np.asarray(LAST_IMAGE)
+    return MODEL, np.asarray(LAST_IMAGE)

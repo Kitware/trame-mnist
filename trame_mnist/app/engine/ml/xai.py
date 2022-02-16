@@ -13,8 +13,6 @@ from xaitk_saliency.impls.gen_image_classifier_blackbox_sal import (
 # App specific
 from .common import TRANSFORM
 
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 
 # SMQTK black-box classifier
 class ClfModel(ClassifyImage):
@@ -26,9 +24,9 @@ class ClfModel(ClassifyImage):
         return self._labels
 
     @torch.no_grad()
-    def classify_images(self, image_iter, device=DEVICE):
+    def classify_images(self, image_iter):
         for img in image_iter:
-            inp = TRANSFORM(img).unsqueeze(0).to(device)
+            inp = TRANSFORM(img).unsqueeze(0).to(self.model.device)
             vec = self.model(inp).cpu().numpy().squeeze()
             out = softmax(vec)
             yield dict(zip(self.get_labels(), out))

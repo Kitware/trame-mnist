@@ -6,6 +6,8 @@ import torch.nn as nn
 import torchvision.transforms as transforms
 import numpy as np
 
+from trame_mnist.app import cli
+
 # -----------------------------------------------------------------------------
 # Globals
 # -----------------------------------------------------------------------------
@@ -19,6 +21,11 @@ MODEL_PATH = Path(DATA_DIR, "model_lenet-5.trained").resolve().absolute()
 TRANSFORM = transforms.Compose(
     [transforms.ToTensor(), transforms.Normalize((0,), (1,))]
 )
+
+DEVICE = torch.device("cpu")
+if not cli.get_args().cpu and torch.cuda.is_available():
+    DEVICE = torch.device("cuda")
+    print(" ~~~ Using GPU ~~~ \n")
 
 # -----------------------------------------------------------------------------
 
@@ -58,10 +65,7 @@ class LeNet5(nn.Module):
 
 class Model:
     def __init__(self, model, learning_rate=1e-5):
-        self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        if torch.cuda.is_available():
-            print("\n ~~~ Using GPU ~~~ \n")
-
+        self._device = DEVICE
         self.model = model.to(self._device)
         self.lr = learning_rate
         self.loss = nn.CrossEntropyLoss()
