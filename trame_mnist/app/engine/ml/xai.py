@@ -2,7 +2,6 @@ from scipy.special import softmax
 
 # pytorch
 import torch
-import torch.nn as nn
 
 # xaitk-saliency
 from smqtk_classifier import ClassifyImage
@@ -13,6 +12,8 @@ from xaitk_saliency.impls.gen_image_classifier_blackbox_sal import (
 
 # App specific
 from .common import TRANSFORM
+
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 # SMQTK black-box classifier
@@ -25,9 +26,9 @@ class ClfModel(ClassifyImage):
         return self._labels
 
     @torch.no_grad()
-    def classify_images(self, image_iter):
+    def classify_images(self, image_iter, device=DEVICE):
         for img in image_iter:
-            inp = TRANSFORM(img).unsqueeze(0)
+            inp = TRANSFORM(img).unsqueeze(0).to(device)
             vec = self.model(inp).cpu().numpy().squeeze()
             out = softmax(vec)
             yield dict(zip(self.get_labels(), out))

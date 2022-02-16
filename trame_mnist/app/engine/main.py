@@ -43,11 +43,12 @@ state.update(
 def initialize(**kwargs):
     global MULTI_PROCESS_MANAGER, PROCESS_EXECUTOR
     MULTI_PROCESS_MANAGER = multiprocessing.Manager()
-    PROCESS_EXECUTOR = ProcessPoolExecutor(1)
+    SPAWN = multiprocessing.get_context("spawn")
+    PROCESS_EXECUTOR = ProcessPoolExecutor(1, mp_context=SPAWN)
 
     if ml.has_trained_model() and state.epoch_end == 0:
         # Just load existing state
-        asyncio.create_task(training_add())
+        utils.create_task(training_add())
 
     reset_model()
     prediction_update()
@@ -71,11 +72,13 @@ async def training_add():
     loop = asyncio.get_event_loop()
     queue = MULTI_PROCESS_MANAGER.Queue()
 
-    task_training = loop.run_in_executor(
-        PROCESS_EXECUTOR,
-        partial(ml.training_add, queue, state.epoch_end),
+    task_training = utils.decorate_task(
+        loop.run_in_executor(
+            PROCESS_EXECUTOR,
+            partial(ml.training_add, queue, state.epoch_end),
+        )
     )
-    task_monitor = loop.create_task(utils.queue_to_state(queue, task_training))
+    task_monitor = utils.create_task(utils.queue_to_state(queue, task_training))
 
     # Only join on monitor task
     PENDING_TASKS.append(task_monitor)

@@ -29,11 +29,12 @@ def winner_class(classes):
 
 @torch.no_grad()
 def testing_run(datasets=LOADER_TEST):
-    model = get_model().model
+    device, model = get_model().device, get_model().model
     model.eval()
     confusion_matrix = np.zeros((10, 10), dtype=np.float64)
     for inputs, targets in datasets:
-        outputs = model(inputs).numpy()
+        inputs, targets = inputs.to(device), targets.to(device)
+        outputs = model(inputs).cpu().numpy()
         for i in range(inputs.shape[0]):
             confusion_matrix[winner_class(outputs[i])][int(targets[i])] += 1
 

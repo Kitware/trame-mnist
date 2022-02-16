@@ -58,7 +58,11 @@ class LeNet5(nn.Module):
 
 class Model:
     def __init__(self, model, learning_rate=1e-5):
-        self.model = model
+        self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        if torch.cuda.is_available():
+            print("\n ~~~ Using GPU ~~~ \n")
+
+        self.model = model.to(self._device)
         self.lr = learning_rate
         self.loss = nn.CrossEntropyLoss()
         self.opt = torch.optim.Adam(self.model.parameters(), lr=self.lr)
@@ -74,6 +78,10 @@ class Model:
     def __call__(self, *args, **kwds):
         return self.model(*args, **kwds)
 
+    @property
+    def device(self):
+        return self._device
+
     def batch_accuracy(self, output, target):
         # output shape: [batch, 10]
         output = nn.functional.softmax(output, dim=1)
@@ -86,6 +94,7 @@ class Model:
         batch_loss = []
         batch_acc = []
         for inputs, targets in dataset:
+            inputs, targets = inputs.to(self._device), targets.to(self._device)
             outputs = self.model(inputs)
 
             loss = self.loss(outputs, targets)
@@ -102,6 +111,7 @@ class Model:
         batch_loss = []
         batch_acc = []
         for inputs, targets in dataset:
+            inputs, targets = inputs.to(self._device), targets.to(self._device)
             outputs = self.model(inputs)
 
             loss = self.loss(outputs, targets)
@@ -111,9 +121,12 @@ class Model:
         self.val_loss.append(float(np.mean(batch_loss)))
         self.val_acc.append(float(np.mean(batch_acc)))
 
-    def load(self, model_path=MODEL_PATH):
+    def load(
+        self,
+        model_path=MODEL_PATH,
+    ):
         if Path(model_path).exists():
-            data = torch.load(model_path)
+            data = torch.load(model_path, map_location=self._device)
             self.metadata = data.get("metadata")
             self.model.load_state_dict(data.get("state_dict"))
             self.model.eval()
@@ -127,7 +140,7 @@ class Model:
 
     def predict(self, image):
         self.model.eval()
-        tensor = TRANSFORM(image)
+        tensor = TRANSFORM(image).to(self._device)
         tensor = torch.reshape(tensor, (1, *tensor.shape))
         return self.model(tensor)
 
