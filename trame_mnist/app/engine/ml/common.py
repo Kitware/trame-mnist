@@ -62,7 +62,7 @@ class Model:
         if torch.cuda.is_available():
             print("\n ~~~ Using GPU ~~~ \n")
 
-        self.model = model
+        self.model = model.to(self._device)
         self.lr = learning_rate
         self.loss = nn.CrossEntropyLoss()
         self.opt = torch.optim.Adam(self.model.parameters(), lr=self.lr)
@@ -129,7 +129,6 @@ class Model:
             data = torch.load(model_path, map_location=self._device)
             self.metadata = data.get("metadata")
             self.model.load_state_dict(data.get("state_dict"))
-            self.model.to(self._device)
             self.model.eval()
 
     def save(self, output_path=MODEL_PATH):
