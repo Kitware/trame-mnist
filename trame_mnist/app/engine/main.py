@@ -7,8 +7,8 @@ import multiprocessing
 from functools import partial
 from concurrent.futures import ProcessPoolExecutor
 
-from . import ml, utils, charts
-from trame import state, controller as ctrl
+from . import ml, charts
+from trame import state, async_utils ,controller as ctrl
 
 MULTI_PROCESS_MANAGER = None
 PROCESS_EXECUTOR = None
@@ -48,7 +48,7 @@ def initialize(**kwargs):
 
     if ml.has_trained_model() and state.epoch_end == 0:
         # Just load existing state
-        utils.create_task(training_add())
+        async_utils.create_task(training_add())
 
     reset_model()
     prediction_update()
@@ -72,16 +72,15 @@ async def training_add():
     loop = asyncio.get_event_loop()
     queue = MULTI_PROCESS_MANAGER.Queue()
 
-    task_training = utils.decorate_task(
+    async_utils.decorate_task(
         loop.run_in_executor(
             PROCESS_EXECUTOR,
             partial(ml.training_add, queue, state.epoch_end),
         )
     )
-    task_monitor = utils.create_task(utils.queue_to_state(queue, task_training))
 
     # Only join on monitor task
-    PENDING_TASKS.append(task_monitor)
+    PENDING_TASKS.append(async_utils.create_state_queue_monitor_task(queue))
 
     reset_model()
 

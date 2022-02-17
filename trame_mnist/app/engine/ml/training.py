@@ -3,6 +3,8 @@ import torchvision
 
 from .common import TRANSFORM, DATA_DIR, get_model
 
+from trame import async_utils
+
 DATASET_TRAINING = torchvision.datasets.MNIST(
     root=DATA_DIR,
     train=True,
@@ -35,23 +37,25 @@ def create_training_loaders(batch_size):
 
 
 def training_add(queue, end_epoch, learning_rate=1e-5, batch=32):
-    queue.put_nowait(dict(training_running=True, epoch_end=end_epoch))
-    model = get_model(learning_rate)
-    training_loader, validation_loader = create_training_loaders(batch)
+    with async_utils.StateQueue(queue) as state:
+        state.training_running = True
+        state.epoch_end = end_epoch
 
-    while model.epoch < end_epoch:
-        model.train_step(training_loader)
-        model.validation_step(validation_loader)
-        model.epoch += 1
-        queue.put_nowait({"model_state": model.metadata})
+        model = get_model(learning_rate)
+        training_loader, validation_loader = create_training_loaders(batch)
 
-    queue.put_nowait(
-        {
-            "epoch_end": max(end_epoch, model.epoch),
-            "model_state": model.metadata,
-            "training_running": False,
-        }
-    )
+        while model.epoch < end_epoch:
+            model.train_step(training_loader)
+            model.validation_step(validation_loader)
+            model.epoch += 1
+            state.model_state = model.metadata
 
-    model.save()
-    queue.put_nowait("stop")
+        state.update(
+            {
+                "epoch_end": max(end_epoch, model.epoch),
+                "model_state": model.metadata,
+                "training_running": False,
+            }
+        )
+
+        model.save()
