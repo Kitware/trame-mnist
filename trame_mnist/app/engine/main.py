@@ -11,6 +11,7 @@ from . import ml, charts
 
 from trame.app import asynchronous
 
+RUNNING = False
 MULTI_PROCESS_MANAGER = None
 PROCESS_EXECUTOR = None
 PENDING_TASKS = []
@@ -193,6 +194,11 @@ def initialize(server):
 
     @state.change("prediction_search_failure")
     def toggle_search_failue(prediction_search_failure, **kwargs):
+        # use RUNNING guard to prevent multi-scheduling
+        global RUNNING
+        if RUNNING and prediction_search_failure:
+            return
+        RUNNING = prediction_search_failure
         if prediction_search_failure:
             _prediction_next_failure()
 
