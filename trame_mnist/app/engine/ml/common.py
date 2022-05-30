@@ -6,8 +6,6 @@ import torch.nn as nn
 import torchvision.transforms as transforms
 import numpy as np
 
-from trame_mnist.app import cli
-
 # -----------------------------------------------------------------------------
 # Globals
 # -----------------------------------------------------------------------------
@@ -23,9 +21,15 @@ TRANSFORM = transforms.Compose(
 )
 
 DEVICE = torch.device("cpu")
-if not cli.get_args().cpu and torch.cuda.is_available():
-    DEVICE = torch.device("cuda")
-    print(" ~~~ Using GPU ~~~ \n")
+
+
+def update_ml_device(cpu_only=True):
+    if not cpu_only and torch.cuda.is_available():
+        DEVICE = torch.device("cuda")
+        print(" ~~~ Using GPU ~~~ \n")
+    else:
+        print(" ~~~ Using CPU ~~~ \n")
+
 
 # -----------------------------------------------------------------------------
 

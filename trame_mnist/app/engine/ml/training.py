@@ -3,7 +3,7 @@ import torchvision
 
 from .common import TRANSFORM, DATA_DIR, get_model
 
-from trame import async_utils
+from trame.app import asynchronous
 
 DATASET_TRAINING = torchvision.datasets.MNIST(
     root=DATA_DIR,
@@ -37,7 +37,7 @@ def create_training_loaders(batch_size):
 
 
 def training_add(queue, end_epoch, learning_rate=1e-5, batch=32):
-    with async_utils.StateQueue(queue) as state:
+    with asynchronous.StateQueue(queue) as state:
         state.training_running = True
         state.epoch_end = end_epoch
 
