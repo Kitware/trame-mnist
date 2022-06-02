@@ -24,6 +24,7 @@ DEVICE = torch.device("cpu")
 
 
 def update_ml_device(cpu_only=True):
+    global DEVICE
     if not cpu_only and torch.cuda.is_available():
         DEVICE = torch.device("cuda")
         print(" ~~~ Using GPU ~~~ \n")
