@@ -33,8 +33,6 @@ venv setup for AI
 
     conda create --name trame-mnist python=3.9
     conda activate trame-mnist
-    conda install "pytorch==1.9.1" "torchvision==0.10.1" -c pytorch
-    conda install scipy "scikit-learn==0.24.2" "scikit-image==0.18.3" -c conda-forge
 
     # For development when inside repo
     pip install -e .
