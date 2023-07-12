@@ -31,5 +31,4 @@ def main(server=None, **kwargs):
 
 
 if __name__ == "__main__":
-
     main()

@@ -1,0 +1,10 @@
+trame:
+  cmd:
+    - trame-mnist
+    - --host
+    - 127.0.0.1
+    - --port
+    - ${port}
+    - --authKey
+    - ${secret}
+    - --server

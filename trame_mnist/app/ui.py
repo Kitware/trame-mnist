@@ -1,5 +1,5 @@
 from trame.ui.vuetify import SinglePageLayout
-from trame.widgets import vega, vuetify, html, trame
+from trame.widgets import plotly, vuetify, html, trame
 
 TITLE = "MNIST Exploration"
 
@@ -162,14 +162,24 @@ def initialize(server):
                 with vuetify.VCol(
                     v_if="view_mode == 'training' && model_state.epoch > 1"
                 ):
-                    chart_acc = vega.Figure(
-                        style="width: 100%;",
+                    # chart_acc = vega.Figure(
+                    #     style="width: 100%;",
+                    #     v_show="view_mode === 'training'",
+                    # )
+                    chart_acc = plotly.Figure(
+                        style="width: 100%; height: 100%;",
                         v_show="view_mode === 'training'",
+                        display_mode_bar=False,
                     )
                     ctrl.chart_acc_update = chart_acc.update
-                    chart_loss = vega.Figure(
-                        style="width: 100%;",
+                    # chart_loss = vega.Figure(
+                    #     style="width: 100%;",
+                    #     v_show="view_mode === 'training'",
+                    # )
+                    chart_loss = plotly.Figure(
+                        style="width: 100%; height: 100%;",
                         v_show="view_mode === 'training'",
+                        display_mode_bar=False,
                     )
                     ctrl.chart_loss_update = chart_loss.update
 
@@ -210,9 +220,13 @@ def initialize(server):
                                     html.Span("{{ prediction_label }}")
 
                     with vuetify.VCol(align_self="center", cols=8):
-                        chart_pred = vega.Figure(
-                            style="width: 100%; display: flex;",
+                        chart_pred = plotly.Figure(
+                            style="width: 100%; height: 100%;",
+                            display_mode_bar=False,
                         )
+                        # chart_pred = vega.Figure(
+                        #     style="width: 100%; display: flex;",
+                        # )
                         ctrl.chart_pred_update = chart_pred.update
 
                 # Execution page
@@ -272,16 +286,28 @@ def initialize(server):
                     justify="center",
                     style="height: 100%; max-height: calc(100vh - 64px);",
                 ):
-                    chart_confusion_matrix = vega.Figure(
+                    # chart_confusion_matrix = vega.Figure(
+                    #     v_show="view_mode == 'testing' && testing_count",
+                    #     style="width: 50%;",
+                    #     key="`${testing_count}-matrix`",
+                    # )
+                    chart_confusion_matrix = plotly.Figure(
                         v_show="view_mode == 'testing' && testing_count",
-                        style="width: 50%;",
+                        style="width: 50%; heigh: 100%;",
+                        display_mode_bar=False,
                         key="`${testing_count}-matrix`",
                     )
                     ctrl.chart_confusion_matrix = chart_confusion_matrix.update
 
-                    chart_class_accuracy = vega.Figure(
+                    # chart_class_accuracy = vega.Figure(
+                    #     v_show="view_mode == 'testing' && testing_count",
+                    #     style="width: 50%;",
+                    #     key="`${testing_count}-class`",
+                    # )
+                    chart_class_accuracy = plotly.Figure(
                         v_show="view_mode == 'testing' && testing_count",
-                        style="width: 50%;",
+                        style="width: 50%; heigh: 100%;",
+                        display_mode_bar=False,
                         key="`${testing_count}-class`",
                     )
                     ctrl.chart_class_accuracy = chart_class_accuracy.update
